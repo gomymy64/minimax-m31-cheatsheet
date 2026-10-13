@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Материалы к Уроку MiniMax M3.1 | Мастодонт</title>
+<style>
+@font-face{font-family:"Benzin";src:url("fonts/Benzin-Bold.ttf") format("truetype");font-weight:700;font-display:swap}
+@font-face{font-family:"Benzin";src:url("fonts/Benzin-ExtraBold.ttf") format("truetype");font-weight:800;font-display:swap}
+@font-face{font-family:"Onest";src:url("fonts/Onest-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"Onest";src:url("fonts/Onest-Medium.ttf") format("truetype");font-weight:500;font-display:swap}
+@font-face{font-family:"Onest";src:url("fonts/Onest-SemiBold.ttf") format("truetype");font-weight:600;font-display:swap}
+@font-face{font-family:"Onest";src:url("fonts/Onest-Bold.ttf") format("truetype");font-weight:700;font-display:swap}
+@font-face{font-family:"Blender";src:url("fonts/BlenderPro-Medium.ttf") format("truetype");font-weight:500;font-display:swap}
+@font-face{font-family:"Blender";src:url("fonts/BlenderPro-Bold.ttf") format("truetype");font-weight:700;font-display:swap}
+
+:root{--bg:#08090B;--bg2:#0D0F12;--bg3:#13161B;--ink:#EEF0F3;--dim:#8C94A0;
+--line:rgba(238,240,243,.09);--line2:rgba(238,240,243,.20);--a1:#4C9AFF;--a2:#F2DB82;
+--pad:clamp(20px,4vw,64px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--a1) var(--bg2)}
+html::-webkit-scrollbar{width:12px}
+html::-webkit-scrollbar-track{background:var(--bg2)}
+html::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--a1),var(--a2));border-radius:8px;border:3px solid var(--bg2)}
+html::-webkit-scrollbar-thumb:hover{background:var(--a1)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Onest",sans-serif;
+font-size:clamp(16px,1.1vw,18px);line-height:1.65;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+background:radial-gradient(900px 600px at 85% 20%,rgba(76,154,255,.07),transparent 70%),radial-gradient(800px 600px at 10% 80%,rgba(242,219,130,.04),transparent 70%)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.025;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{width:min(1080px,100%);margin:0 auto;padding:0 var(--pad);position:relative;z-index:2}
+
+.aura{position:fixed;width:620px;height:620px;left:0;top:0;pointer-events:none;z-index:1;
+transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(76,154,255,.10),transparent 62%)}
+.bar{position:fixed;left:0;top:0;height:3px;width:0;z-index:200;
+background:linear-gradient(90deg,var(--a1),var(--a2));box-shadow:0 0 18px rgba(76,154,255,.6)}
+
+nav{position:sticky;top:0;z-index:90;background:rgba(8,9,11,.82);backdrop-filter:blur(14px) saturate(1.3)}
+nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+background:linear-gradient(90deg,transparent,var(--a1),var(--a2),transparent)}
+.nav-in{display:flex;align-items:center;gap:22px;height:64px}
+.brand{font-family:"Benzin";font-weight:800;font-size:clamp(14px,1.3vw,17px);text-transform:uppercase;letter-spacing:.04em}
+.nav-links{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+nav a{font-family:"Blender";font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+color:var(--dim);text-decoration:none;padding:9px 13px;border-radius:3px;transition:.25s}
+nav a:hover{color:var(--ink);background:rgba(238,240,243,.06)}
+@media(max-width:700px){.nav-links{display:none}}
+
+/* первый экран: картинка в своей пропорции, плавный параллакс */
+.hero{position:relative;aspect-ratio:2048/1152;max-height:none;display:grid;align-items:end;overflow:hidden;
+border-bottom:1px solid rgba(238,240,243,.14)}
+.hero-img{position:absolute;inset:-4% 0 0;width:100%;height:108%;object-fit:cover;object-position:center top;will-change:transform}
+@media(max-width:900px){.hero{aspect-ratio:auto;min-height:min(88vh,760px)}}
+.hero::after{content:"";position:absolute;inset:0;
+background:linear-gradient(180deg,rgba(8,9,11,.25) 0%,rgba(8,9,11,0) 26%,rgba(8,9,11,.12) 48%,rgba(8,9,11,.7) 72%,rgba(8,9,11,.95) 90%,#08090B 100%)}
+.hero-in{position:relative;z-index:3;width:min(1080px,100%);margin:0 auto;
+padding:0 var(--pad) clamp(46px,6vw,88px);display:flex;flex-direction:column;align-items:flex-start}
+.badge{display:inline-block;font-family:"Blender";font-weight:700;font-size:12px;letter-spacing:.26em;
+text-transform:uppercase;color:var(--a2);border:1px solid rgba(242,219,130,.6);padding:8px 15px;border-radius:2px;
+background:rgba(8,9,11,.6);backdrop-filter:blur(6px)}
+h1{font-family:"Benzin";font-weight:800;text-transform:uppercase;margin:22px 0 0;
+font-size:clamp(28px,4.6vw,64px);line-height:1.02;letter-spacing:-.01em;text-shadow:0 6px 44px rgba(0,0,0,.85)}
+h1 em{font-style:normal;color:#F7D774;
+text-shadow:0 0 34px rgba(247,215,116,.75),0 0 70px rgba(247,200,90,.4),0 4px 22px rgba(0,0,0,.95)}
+.sub{margin:18px 0 0;color:#C3C9D2;max-width:58ch;text-shadow:0 2px 16px rgba(0,0,0,.9)}
+.watch{display:inline-flex;align-items:center;gap:11px;margin-top:30px;
+background:linear-gradient(100deg,var(--a1),var(--a2));color:#08090B;
+font-family:"Blender";font-weight:700;font-size:14px;letter-spacing:.14em;text-transform:uppercase;
+padding:16px 30px;border-radius:3px;text-decoration:none;
+box-shadow:0 12px 34px rgba(76,154,255,.28);transition:transform .22s,box-shadow .22s}
+.watch:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 18px 46px rgba(76,154,255,.42)}
+.watch .pi{width:18px;height:18px;stroke:#08090B;fill:#08090B}
+
+section{padding:clamp(48px,6.5vw,104px) 0;position:relative;z-index:2}
+h2{font-family:"Benzin";font-weight:800;text-transform:uppercase;margin:0 0 12px;
+font-size:clamp(22px,3.2vw,44px);line-height:1.04}
+.h2-note{color:var(--dim);margin:0 0 38px;max-width:56ch}
+h3{font-family:"Benzin";font-weight:700;text-transform:uppercase;margin:0 0 13px;
+font-size:clamp(16px,1.8vw,24px);line-height:1.15}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;perspective:1100px}
+.card{background:linear-gradient(160deg,var(--bg3),var(--bg2));border:1px solid var(--line);
+border-radius:6px;padding:28px 26px;position:relative;overflow:hidden;
+transform-style:preserve-3d;transition:transform .3s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .3s}
+.card:hover{border-color:var(--line2);box-shadow:0 22px 50px rgba(0,0,0,.55)}
+.card::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--a1),var(--a2))}
+.card p{margin:0;color:#B4BBC5;font-size:.97em}
+.ci{width:38px;height:38px;margin-bottom:16px;display:block;transition:transform .3s}
+.card:hover .ci{transform:scale(1.12)}
+
+.tools{display:grid;gap:11px}
+.tool{display:flex;align-items:center;gap:16px;background:var(--bg2);border:1px solid var(--line);
+border-radius:5px;padding:19px 24px;flex-wrap:wrap;text-decoration:none;color:inherit;
+position:relative;overflow:hidden;transition:transform .25s,border-color .25s,background .25s}
+.tool::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+background:linear-gradient(180deg,var(--a1),var(--a2));transform:scaleY(0);transition:transform .3s}
+.tool:hover{border-color:var(--line2);transform:translateX(6px);background:var(--bg3)}
+.tool:hover::before{transform:scaleY(1)}
+.ti{width:24px;height:24px;flex:none}
+.tool .nm{font-family:"Blender";font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase}
+.tool .ds{color:var(--dim);font-size:.9em;flex:1;min-width:170px}
+.pill{font-family:"Blender";font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+padding:6px 12px;border-radius:2px;border:1px solid var(--line2);color:var(--dim);white-space:nowrap}
+.pill.free{color:var(--a2);border-color:rgba(242,219,130,.45)}
+
+/* шаги */
+.step{display:grid;grid-template-columns:minmax(96px,150px) 1fr;gap:clamp(18px,2.6vw,42px);
+background:linear-gradient(155deg,var(--bg3),var(--bg2) 60%);border:1px solid var(--line);
+border-radius:8px;padding:clamp(26px,3.2vw,44px);margin-bottom:16px;position:relative;overflow:hidden;
+box-shadow:0 18px 44px rgba(0,0,0,.35)}
+.step::before{content:"";position:absolute;inset:0 0 auto;height:3px;
+background:linear-gradient(90deg,var(--a1),var(--a2),transparent)}
+.step::after{content:"";position:absolute;right:-120px;top:-120px;width:300px;height:300px;
+pointer-events:none;background:radial-gradient(circle,rgba(76,154,255,.10),transparent 68%)}
+.num{font-family:"Benzin";font-weight:800;font-size:clamp(34px,3.6vw,56px);line-height:.9;color:transparent;
+-webkit-text-stroke:1.5px rgba(76,154,255,.65);position:sticky;top:96px;align-self:start;
+white-space:nowrap;letter-spacing:-.03em;max-width:100%}
+.step-body{min-width:0}
+@media(max-width:760px){.step{grid-template-columns:1fr}.num{position:static;font-size:38px}}
+.step .lead{color:#B4BBC5;margin:0 0 20px;max-width:64ch}
+.acts{list-style:none;padding:0;margin:0 0 20px}
+.acts li{position:relative;padding-left:26px;margin-bottom:11px}
+.acts li::before{content:"";position:absolute;left:2px;top:.62em;width:12px;height:2px;
+background:linear-gradient(90deg,var(--a1),var(--a2))}
+.acts a,.tip a,.lead a,.warn a{color:var(--a2)}
+
+/* промпт */
+.pr{margin:22px 0;background:#060709;border:1px solid var(--line);border-left:3px solid transparent;
+border-image:linear-gradient(180deg,var(--a1),var(--a2)) 1;
+box-shadow:0 14px 40px rgba(0,0,0,.55),0 0 40px rgba(76,154,255,.07),inset 0 1px 0 rgba(255,255,255,.04);overflow:hidden}
+.pr-top{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.pr-lab{font-family:"Blender";font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--a1)}
+.copy{margin-left:auto;background:transparent;border:1px solid var(--line2);color:var(--dim);
+font-family:"Blender";font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+padding:8px 15px;border-radius:2px;cursor:pointer;transition:.2s}
+.copy:hover{border-color:var(--a1);color:var(--a1);box-shadow:0 0 20px rgba(76,154,255,.25)}
+.copy.done{border-color:var(--a2);color:var(--a2)}
+.pr-body{margin:0;padding:20px 18px;white-space:pre-wrap;word-break:break-word;
+font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.84em;line-height:1.62;
+max-height:340px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--a1) rgba(238,240,243,.04)}
+.pr-body::-webkit-scrollbar{width:9px}
+.pr-body::-webkit-scrollbar-track{background:rgba(238,240,243,.04)}
+.pr-body::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--a1),var(--a2));border-radius:5px}
+
+.tip,.warn{border-radius:5px;padding:16px 20px;margin:14px 0 0;font-size:.94em}
+.tip{background:rgba(242,219,130,.05);border:1px solid rgba(242,219,130,.24)}
+.warn{background:rgba(76,154,255,.05);border:1px solid rgba(76,154,255,.28)}
+
+/* кадры во всю ширину, в своей пропорции */
+.shot{position:relative;border-radius:10px;overflow:hidden;display:grid;align-items:end;
+box-shadow:0 40px 90px rgba(0,0,0,.65);--gut:clamp(18px,3.2vw,64px);
+width:calc(100vw - var(--gut)*2);margin-left:calc(50% - 50vw + var(--gut));
+margin-top:clamp(52px,7vw,110px);margin-bottom:clamp(52px,7vw,110px)}
+@media(max-width:760px){.shot{--gut:14px}}
+.shot img{position:absolute;inset:-3% 0 0;width:100%;height:106%;object-fit:cover;will-change:transform}
+.shot::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,9,11,0) 45%,rgba(8,9,11,.88))}
+.shot.top{align-items:start}
+.shot.top::after{background:linear-gradient(0deg,rgba(8,9,11,0) 50%,rgba(8,9,11,.85))}
+.shot figcaption{position:relative;z-index:2;padding:clamp(22px,4vw,64px);max-width:1080px;
+font-family:"Benzin";font-weight:800;text-transform:uppercase;font-size:clamp(17px,2.8vw,42px);line-height:1.08}
+.shot .k{display:block;font-family:"Blender";font-weight:700;font-size:12px;letter-spacing:.24em;color:var(--a2);margin-bottom:12px}
+
+[data-rv]{opacity:0;transform:translateY(34px) scale(.985);
+transition:opacity .75s cubic-bezier(.2,.7,.2,1),transform .75s cubic-bezier(.2,.7,.2,1)}
+[data-rv].in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){[data-rv]{opacity:1;transform:none;transition:none}
+.hero-img,.shot img{transform:none!important}}
+
+/* блок интенсива: вся карточка - одна ссылка-накладка */
+.cta{background:linear-gradient(155deg,var(--bg3),var(--bg2));border:1px solid var(--line2);border-radius:8px;
+padding:clamp(30px,4vw,58px);position:relative;overflow:hidden;cursor:pointer;
+transition:border-color .3s,transform .3s;animation:glow 3s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 44px rgba(76,154,255,.10)}50%{box-shadow:0 0 84px rgba(76,154,255,.24)}}
+.cta:hover{border-color:var(--a1);transform:translateY(-4px)}
+.cta-hit{position:absolute;inset:0;z-index:5;display:block}
+.cta::before{content:"";position:absolute;right:-90px;top:-90px;width:300px;height:300px;pointer-events:none;
+background:radial-gradient(circle,rgba(76,154,255,.16),transparent 68%)}
+.cta::after{content:"";position:absolute;left:-90px;bottom:-90px;width:300px;height:300px;pointer-events:none;
+background:radial-gradient(circle,rgba(242,219,130,.12),transparent 68%)}
+.cta h2 span{background:linear-gradient(100deg,var(--a1),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.cta-cols{display:grid;grid-template-columns:1fr 1fr;gap:clamp(22px,3vw,50px);margin-top:30px}
+@media(max-width:760px){.cta-cols{grid-template-columns:1fr}}
+.cta-cols h4{font-family:"Blender";font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--a1);margin:0 0 15px}
+.cta-cols ul{list-style:none;padding:0;margin:0}
+.cta-cols li{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;color:#B4BBC5;font-size:.95em}
+.li{width:20px;height:20px;flex:none;margin-top:2px}
+.cta-bottom{display:flex;align-items:center;gap:20px;margin-top:34px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:28px}
+.cta-bottom .free{font-family:"Blender";font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:14px;color:var(--dim)}
+.cta-bottom .free b{color:var(--a2)}
+.cta-btn{margin-left:auto;background:linear-gradient(100deg,var(--a1),var(--a2));color:#08090B;
+font-family:"Blender";font-weight:700;font-size:14px;letter-spacing:.14em;text-transform:uppercase;
+padding:16px 32px;border-radius:3px;transition:transform .22s}
+.cta:hover .cta-btn{transform:translateY(-2px) scale(1.03)}
+
+footer{border-top:1px solid var(--line);padding:44px 0 66px;position:relative;z-index:2}
+.f-in{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.f-in .tag{color:var(--dim);font-size:.92em}
+.f-in a{margin-left:auto;color:var(--a2);text-decoration:none;font-family:"Blender";font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+::selection{background:var(--a1);color:#08090B}
+@media(min-width:2200px){.wrap,.hero-in{width:min(1280px,100%)}}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="g" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4C9AFF"/><stop offset="1" stop-color="#F2DB82"/></linearGradient>
+</defs></svg>
+
+<div class="bar" id="bar"></div>
+<div class="aura" id="aura"></div>
+
+<nav><div class="wrap nav-in">
+<span class="brand">Мастодонт</span>
+<div class="nav-links">
+<a href="#learn">Что научишься</a><a href="#tools">Инструменты</a><a href="#steps">Шаги</a><a href="#links">Ссылки</a>
+</div></div></nav>
+
+<header class="hero">
+<img class="hero-img" id="heroimg" src="img/hero.jpg" alt="Пять уровней мышления M3.1">
+<div class="hero-in">
+<span class="badge" data-rv>Материалы к уроку</span>
+<h1 data-rv>MiniMax M3.1<br><em>4 работы в одном окне</em></h1>
+<p class="sub" data-rv>Свой сервис, рекламный ролик со звуком из одной фотки, Тетрис в браузере и 3D-костюм Железного человека - всё в MiniMax Code на новой модели M3.1.</p>
+<a class="watch" data-rv href="https://youtu.be/lL45Zla-K_E" target="_blank" rel="noopener"><svg class="pi" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>Смотреть видео</a>
+</div></header>
+
+<section id="learn"><div class="wrap">
+<h2 data-rv>Что научишься делать</h2>
+<p class="h2-note" data-rv>Четыре работы, каждая сложнее предыдущей. Всё в одном приложении.</p>
+<div class="cards"><div class="card" data-rv><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="1.5"/><path d="M3.5 8.5h17"/><rect x="6.5" y="11" width="4.5" height="6"/><path d="M13.5 11.5h4M13.5 14h4M13.5 16.5h2.5"/></svg><p>Собрать свой мини-сервис внутри MiniMax Code: описал словами - и пользуешься</p></div><div class="card" data-rv><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="12.5" height="10" rx="1.5"/><path d="m15.5 10.5 5-3v9l-5-3"/><circle cx="7.5" cy="12" r="1.8"/></svg><p>Сделать рекламный ролик со звуком из одной фотографии: сцену пишет M3.1, снимает H3</p></div><div class="card" data-rv><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="14" width="4" height="4"/><rect x="8" y="14" width="4" height="4"/><rect x="8" y="10" width="4" height="4"/><rect x="12" y="14" width="4" height="4"/><rect x="15.5" y="4.5" width="4" height="4"/><path d="M17.5 9.5v2"/></svg><p>Собрать копию Тетриса, в которую можно играть в браузере</p></div><div class="card" data-rv><svg class="ci" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg><p>Собрать интерактивную 3D-страницу костюма Железного человека</p></div></div></div></section>
+
+<section id="tools"><div class="wrap">
+<h2 data-rv>Что понадобится</h2>
+<p class="h2-note" data-rv>Старт бесплатный: за ежедневный вход дают очки.</p>
+<div class="tools"><a class="tool" data-rv href="https://agent.minimax.io/download" target="_blank" rel="noopener"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4"/><path d="M4 17v2.5h16V17"/></svg><span class="nm">MiniMax Code</span><span class="ds">Приложение на компьютер, внутри сидит ИИ-агент</span><span class="pill free">старт бесплатно</span></a><a class="tool" data-rv href="https://agent.minimax.io/" target="_blank" rel="noopener"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/></svg><span class="nm">Аккаунт MiniMax</span><span class="ds">Вход и ежедневные очки</span><span class="pill free">бесплатно</span></a><div class="tool" data-rv><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5h4v2a1.8 1.8 0 1 0 3.6 0v-2H20v6h-2a1.8 1.8 0 1 0 0 3.6h2V20H4v-6h2a1.8 1.8 0 1 0 0-3.6H4V4.5z"/></svg><span class="nm">Плагин video-creator</span><span class="ds">Ставится из каталога плагинов внутри MiniMax Code, нужен для видео</span><span class="pill free">бесплатно</span></div><div class="tool" data-rv><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="1.5"/><circle cx="9" cy="10" r="1.8"/><path d="m4 17 5-4.5 3.5 3 3-2.5 4.5 4"/></svg><span class="nm">Фото товара</span><span class="ds">Одна фотография, из неё делаем рекламу</span><span class="pill">своё</span></div></div></div></section>
+
+<section id="steps"><div class="wrap">
+<h2 data-rv>Шаги</h2>
+<p class="h2-note" data-rv>Пять шагов по порядку. Промпты копируются кнопкой и вставляются в чат MiniMax Code.</p>
+<article class="step" data-rv><div class="num">01</div><div class="step-body"><h3>Ставим MiniMax Code и выбираем модель</h3><p class="lead">Скачиваем приложение, выбираем новую модель M3.1 и сразу ставим плагин для видео.</p><ul class="acts"><li>Скачай приложение по <a href="https://agent.minimax.io/download" target="_blank" rel="noopener">ссылке</a>, поставь и войди в аккаунт</li><li>Открой рабочую папку - туда агент складывает всё, что сделает</li><li>Если M3.1 нет в списке моделей - обнови приложение</li><li>Выбери модель <b>M3.1-Flash-Preview</b>. У неё пять уровней мышления: low, medium, high, xhigh, max</li><li>Каталог плагинов → video-creator → установить</li></ul><div class="tip">Мелкие правки - на low, большие сборки - на max. Для первой работы хватит high.</div><div class="warn"><b>Бесплатный старт.</b> За ежедневный вход 400 очков, на 4-й и 7-й день по 1000, за неделю 4000. Каждое начисление живёт 30 дней. До 30 октября 2026 на эти очки можно генерить видео в H3 и H3 Max. Условия на момент публикации, у тебя может быть иначе.</div></div></article>
+<article class="step" data-rv><div class="num">02</div><div class="step-body"><h3>Свой мини-сервис</h3><p class="lead">Мини-приложение - твоя маленькая программа прямо внутри MiniMax Code. Описываешь словами, что нужно, и пользуешься рядом с чатом.</p><ul class="acts"><li>Правая панель → + → Mini App → Build a Mini App</li></ul><div class="pr" data-rv><div class="pr-top"><span class="pr-lab">Промпт 1 · пульт автора</span><button class="copy" type="button"><span>Скопировать</span></button></div><pre class="pr-body">Собери мини-приложение - пульт автора YouTube-канала про нейросети. Три колонки. «Темы» - идеи для роликов, у каждой статус: идея, пишу, снято, и кнопка «в работу». «Источники» - я вставляю ссылку на статью или твит, ты сам подтягиваешь заголовок. «Материалы» - картинки и видео из рабочей папки плиткой с превью. Сверху счётчик, сколько тем в каждом статусе. Тёмная тема, крупный шрифт, ничего лишнего.</pre></div><div class="pr" data-rv><div class="pr-top"><span class="pr-lab">Промпт 2 · новый модуль</span><button class="copy" type="button"><span>Скопировать</span></button></div><pre class="pr-body">Добавь модуль «Календарь публикаций»: неделя по дням, я перетаскиваю тему на день, и она получает дату.</pre></div><ul class="acts"><li>Мини-приложение сохраняется: закрыл и открыл заново через + → Mini App</li></ul></div></article>
+<figure class="shot" data-par style="aspect-ratio:2688/2016"><img src="img/mid.jpg" alt="Реклама гитарной педали" loading="lazy"><figcaption><span class="k">Дальше - видео</span>Реклама со звуком<br>из одной фотки</figcaption></figure>
+<article class="step" data-rv><div class="num">03</div><div class="step-body"><h3>Рекламный ролик из одной фотографии</h3><p class="lead">Сначала сцену расписывает M3.1, а снимает её уже видеомодель H3. Одна пишет, другая снимает.</p><ul class="acts"><li>Прикрепи фото товара, уровень мышления high</li></ul><div class="pr" data-rv><div class="pr-top"><span class="pr-lab">Промпт 3 · сцена</span><button class="copy" type="button"><span>Скопировать</span></button></div><pre class="pr-body">Вот фото моей гитарной педали. Придумай рекламный ролик на 10 секунд: что в кадре, как двигается камера, какой свет и какой звук. Педаль должна остаться точно такой же: форма, цвет, надписи. Распиши сцену и сразу сделай из неё задание для видео.</pre></div><ul class="acts"><li>+ → Plugins → video-creator, модель H3</li></ul><div class="pr" data-rv><div class="pr-top"><span class="pr-lab">Промпт 4 · съёмка в H3</span><button class="copy" type="button"><span>Скопировать</span></button></div><pre class="pr-body">Сними это в H3: 10 секунд, 16:9, максимальное разрешение, со звуком. Фото педали - референс.</pre></div><div class="tip">Если фото квадратное, а просишь 16:9, агент остановится и спросит, как быть: взять фото как образец и снять честный широкий кадр или оставить фото первым кадром, но в формате 1:1. Для YouTube выбирай первый вариант.</div><div class="pr" data-rv><div class="pr-top"><span class="pr-lab">Промпт 5 · вторая версия</span><button class="copy" type="button"><span>Скопировать</span></button></div><pre class="pr-body">Сделай вторую версию: та же педаль, но камера облетает её по кругу, ночь, неоновый свет, звук - медленный эмбиент с гулом комбика.</pre></div><ul class="acts"><li>+ → Canvas: положи обе версии на холст рядом</li><li>Выбери лучшую → Add to chat</li></ul><div class="pr" data-rv><div class="pr-top"><span class="pr-lab">Промпт 6 · доводка</span><button class="copy" type="button"><span>Скопировать</span></button></div><pre class="pr-body">Эта лучше. Доведи её: в конце крупный план педали и пауза на две секунды.</pre></div></div></article>
+<article class="step" data-rv><div class="num">04</div><div class="step-body"><h3>Тетрис в браузере</h3><p class="lead">Большая задача - включаем режим Goal. Ставишь агенту цель и условия готовности, и он сам работает и проверяет себя, пока не доведёт до результата.</p><ul class="acts"><li>Открой новую задачу, включи режим Goal и уровень max</li></ul><div class="pr" data-rv><div class="pr-top"><span class="pr-lab">Промпт 7 · Тетрис</span><button class="copy" type="button"><span>Скопировать</span></button></div><pre class="pr-body">Цель: копия Тетриса 1 в 1, игра в браузере. Что должно быть: семь фигур с правильными цветами, вращение, падение, ускорение вниз, сгорание заполненных линий, счёт и уровень, скорость растёт с уровнем, превью следующей фигуры, экран «игра окончена» с кнопкой «заново», музыка и звуки. Выглядит как аккуратная современная версия: чёткая сетка, плавная анимация сгорания линий. Готово, когда ты сам сыграл в браузере, проверил каждое правило и починил всё, что работает не так.</pre></div><ul class="acts"><li>Игра откроется во встроенном браузере - играй</li><li>Нашёл косяк - опиши его одним сообщением, агент починит</li></ul></div></article>
+<article class="step" data-rv><div class="num">05</div><div class="step-body"><h3>3D-костюм Железного человека</h3><p class="lead">Самая сложная работа. Снова Goal на максимуме.</p><ul class="acts"><li>Новая задача, режим Goal, уровень max</li></ul><div class="pr" data-rv><div class="pr-top"><span class="pr-lab">Промпт 8 · 3D-страница</span><button class="copy" type="button"><span>Скопировать</span></button></div><pre class="pr-body">Цель: интерактивная 3D-страница «Костюм Железного человека», открывается в браузере. Что должно быть: шесть ракурсов камеры с переключением; кнопка «Собрать» - броня собирается на фигуре по деталям; режим рентгена - видно реактор в груди и приводы; разрез с подписями на русском; тёмный фон, красно-золотая броня. Готово, когда всё это работает в браузере и ты сам проверил каждую кнопку.</pre></div><ul class="acts"><li>Проверь во встроенном браузере: «Собрать», ракурсы, рентген, разрез</li></ul><div class="tip">Готовый проект агент может выложить на домен minimax.io - он откроется по ссылке в браузере, а не на localhost.</div></div></article>
+</div></section>
+
+<section id="links"><div class="wrap">
+<h2 data-rv>Все ссылки</h2>
+<div class="tools"><a class="tool" data-rv href="https://youtu.be/lL45Zla-K_E" target="_blank" rel="noopener"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span class="nm">Этот видос</span><span class="ds">Смотреть на YouTube</span><span class="pill">видео</span></a><a class="tool" data-rv href="https://agent.minimax.io/download" target="_blank" rel="noopener"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4"/><path d="M4 17v2.5h16V17"/></svg><span class="nm">Скачать MiniMax Code</span><span class="ds">Приложение на компьютер</span><span class="pill free">бесплатно</span></a><a class="tool" data-rv href="https://agent.minimax.io/" target="_blank" rel="noopener"><svg class="ti" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5S9.4 5.9 12 3.5z"/></svg><span class="nm">MiniMax Code</span><span class="ds">Вход и ежедневные очки</span><span class="pill">сервис</span></a></div></div></section>
+
+<div class="wrap"><figure class="shot top" data-par style="aspect-ratio:2688/2016"><img src="img/final.jpg" alt="Сборка костюма 100%" loading="lazy"><figcaption><span class="k">Финал</span>Включи Goal<br>и собери свой 3D-проект</figcaption></figure></div>
+
+<section style="padding-top:0"><div class="wrap"><div class="cta" data-rv>
+<a class="cta-hit" href="https://t.me/mastodont_aibot?start=mini_kurs" target="_blank" rel="noopener" aria-label="Забрать интенсив"></a>
+<h2>Первые <span>$2к</span> на ИИ<br>бесплатный интенсив</h2>
+<div class="cta-cols">
+<div><h4>Внутри</h4><ul>
+<li><svg class="li" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.3 12.3 2.5 2.5 5-5.2"/></svg><span>Реальное демо на Claude вживую</span></li>
+<li><svg class="li" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.3 12.3 2.5 2.5 5-5.2"/></svg><span>Софт, который за 5 минут находит компании без сайтов с готовыми контактами</span></li>
+<li><svg class="li" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.3 12.3 2.5 2.5 5-5.2"/></svg><span>Кейсы учеников: $1650 за 3 проекта без команды</span></li>
+</ul></div>
+<div><h4>Два бонуса в конце</h4><ul>
+<li><svg class="li" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M10 16.5v-9h3a2.5 2.5 0 0 1 0 5h-4.5M8.5 14.5H13"/></svg><span>50 скучных и самых прибыльных ниш без конкуренции</span></li>
+<li><svg class="li" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17 10 11l4 4 6-7"/><path d="M15 8h5v5"/></svg><span>Чек-лист: первые $500 за 7 дней</span></li>
+</ul></div>
+</div>
+<div class="cta-bottom">
+<span class="free"><b>Бесплатно.</b> Навсегда.</span>
+<span class="cta-btn">Забрать интенсив</span>
+</div>
+</div></div></section>
+
+<footer><div class="wrap f-in">
+<span class="brand">Мастодонт</span>
+<span class="tag">AI и нейросети - просто, по делу</span>
+<a href="https://youtu.be/lL45Zla-K_E" target="_blank" rel="noopener">Смотреть на YouTube</a>
+</div></footer>
+
+<script>
+var io=new IntersectionObserver(function(es){
+  es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}});
+},{threshold:.12,rootMargin:"0px 0px -8% 0px"});
+document.querySelectorAll("[data-rv]").forEach(function(el,i){
+  var inHero=!!el.closest(".hero");
+  if(!inHero && el.getBoundingClientRect().top < innerHeight*1.05){
+    setTimeout(function(){el.classList.add("in")}, 420+(i%6)*90);
+    return;
+  }
+  el.style.transitionDelay=(i%6*70)+"ms";io.observe(el);
+});
+
+var bar=document.getElementById("bar"),hero=document.getElementById("heroimg");
+var shots=[].slice.call(document.querySelectorAll(".shot img"));
+function frame(){
+  var y=scrollY,h=document.body.scrollHeight-innerHeight;
+  bar.style.width=(h>0?y/h*100:0)+"%";
+  if(hero&&y<innerHeight*1.5)hero.style.transform="translateY("+(y*.06)+"px)";
+  shots.forEach(function(im){
+    var r=im.parentElement.getBoundingClientRect();
+    if(r.bottom<0||r.top>innerHeight)return;
+    var p=(r.top+r.height/2-innerHeight/2)/innerHeight;
+    im.style.transform="translateY("+(p*-18)+"px)";
+  });
+}
+addEventListener("scroll",function(){requestAnimationFrame(frame)},{passive:true});
+frame();
+
+var aura=document.getElementById("aura");
+addEventListener("pointermove",function(e){aura.style.left=e.clientX+"px";aura.style.top=e.clientY+"px"},{passive:true});
+
+document.querySelectorAll(".card").forEach(function(c){
+  c.addEventListener("pointermove",function(e){
+    var r=c.getBoundingClientRect();
+    var x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    c.style.transform="rotateY("+(x*7)+"deg) rotateX("+(-y*7)+"deg) translateZ(14px)";
+  });
+  c.addEventListener("pointerleave",function(){c.style.transform=""});
+});
+
+document.querySelectorAll(".copy").forEach(function(b){
+  b.addEventListener("click",function(){
+    var t=b.closest(".pr").querySelector(".pr-body").innerText;
+    navigator.clipboard.writeText(t).then(function(){
+      b.querySelector("span").textContent="Скопировано!";b.classList.add("done");
+      setTimeout(function(){b.querySelector("span").textContent="Скопировать";b.classList.remove("done")},2000);
+    });
+  });
+});
+</script>
+</body></html>
